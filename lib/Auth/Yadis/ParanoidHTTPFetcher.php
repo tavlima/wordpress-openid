@@ -92,9 +92,7 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
             $c = curl_init();
 
             if ($c === false) {
-                Auth_OpenID::log(
-                    "curl_init returned false; could not " .
-                    "initialize for URL '%s'", $url);
+                Auth_OpenID::log("curl_init returned false; could not initialize for URL '%s'", $url);
                 return null;
             }
 
@@ -103,15 +101,12 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
             }
 
             if (!$this->allowedURL($url)) {
-                Auth_OpenID::log("Fetching URL not allowed: %s",
-                                 $url);
+                Auth_OpenID::log("Fetching URL not allowed: %s", $url);
                 return null;
             }
 
-            curl_setopt($c, CURLOPT_WRITEFUNCTION,
-                        array($this, "_writeData"));
-            curl_setopt($c, CURLOPT_HEADERFUNCTION,
-                        array($this, "_writeHeader"));
+            curl_setopt($c, CURLOPT_WRITEFUNCTION, array($this, "_writeData"));
+            curl_setopt($c, CURLOPT_HEADERFUNCTION, array($this, "_writeHeader"));
 
             if ($extra_headers) {
                 curl_setopt($c, CURLOPT_HTTPHEADER, $extra_headers);
@@ -123,27 +118,33 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
             } else {
               $curl_user_agent = $cv;
             }
-            curl_setopt($c, CURLOPT_USERAGENT,
-                        Auth_OpenID_USER_AGENT.' '.$curl_user_agent);
+            curl_setopt($c, CURLOPT_USERAGENT, Auth_OpenID_USER_AGENT.' '.$curl_user_agent);
             curl_setopt($c, CURLOPT_TIMEOUT, $off);
             curl_setopt($c, CURLOPT_URL, $url);
 
             if (defined('Auth_OpenID_VERIFY_HOST')) {
                 // set SSL verification options only if Auth_OpenID_VERIFY_HOST
                 // is explicitly set, otherwise use system default.
-                if (Auth_OpenID_VERIFY_HOST) {
+                if (Auth_OpenID_VERIFY_HOST && (!defined('Auth_OpenID_ALLOW_UNSECURE_IDENTITY') || !Auth_OpenID_ALLOW_UNSECURE_IDENTITY)) {
                     curl_setopt($c, CURLOPT_SSL_VERIFYPEER, true);
                     curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 2);
+
                     if (defined('Auth_OpenID_CAINFO')) {
                         curl_setopt($c, CURLOPT_CAINFO, Auth_OpenID_CAINFO);
+                    }
+
+                    if (defined('Auth_OpenID_CAPATH')) {
+                        curl_setopt($c, CURLOPT_CAPATH, Auth_OpenID_CAPATH);
                     }
                 } else {
                     curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
                 }
             }
+
             if (defined('Auth_OpenID_HTTP_PROXY')) {
                 curl_setopt($c, CURLOPT_PROXY, Auth_OpenID_HTTP_PROXY);
             }
+
             curl_exec($c);
 
             $code = curl_getinfo($c, CURLINFO_HTTP_CODE);
@@ -179,10 +180,6 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
                     }
                 }
 
-                Auth_OpenID::log(
-                    "Successfully fetched '%s': GET response code %s",
-                    $url, $code);
-
                 return new Auth_Yadis_HTTPResponse($url, $code,
                                                     $new_headers, $body);
             }
@@ -215,8 +212,7 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
         curl_setopt($c, CURLOPT_POSTFIELDS, $body);
         curl_setopt($c, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($c, CURLOPT_URL, $url);
-        curl_setopt($c, CURLOPT_WRITEFUNCTION,
-                    array($this, "_writeData"));
+        curl_setopt($c, CURLOPT_WRITEFUNCTION, array($this, "_writeData"));
 
         if (defined('Auth_OpenID_VERIFY_HOST')) {
             // set SSL verification options only if Auth_OpenID_VERIFY_HOST
@@ -224,8 +220,13 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
             if (Auth_OpenID_VERIFY_HOST) {
                 curl_setopt($c, CURLOPT_SSL_VERIFYPEER, true);
                 curl_setopt($c, CURLOPT_SSL_VERIFYHOST, 2);
+
                 if (defined('Auth_OpenID_CAINFO')) {
                     curl_setopt($c, CURLOPT_CAINFO, Auth_OpenID_CAINFO);
+                }
+
+                if (defined('Auth_OpenID_CAPATH')) {
+                    curl_setopt($c, CURLOPT_CAPATH, Auth_OpenID_CAPATH);
                 }
             } else {
                 curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
@@ -238,8 +239,7 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
 
         if (!$code) {
             Auth_OpenID::log("Got no response code when fetching %s", $url);
-            Auth_OpenID::log("CURL error (%s): %s",
-                             curl_errno($c), curl_error($c));
+            Auth_OpenID::log("CURL error (%s): %s", curl_errno($c), curl_error($c));
             return null;
         }
 
@@ -262,9 +262,6 @@ class Auth_Yadis_ParanoidHTTPFetcher extends Auth_Yadis_HTTPFetcher {
             }
 
         }
-
-        Auth_OpenID::log("Successfully fetched '%s': POST response code %s",
-                         $url, $code);
 
         return new Auth_Yadis_HTTPResponse($url, $code,
                                            $new_headers, $body);

@@ -360,6 +360,7 @@ class Auth_Yadis_Yadis {
             if ($yadis_location) {
                 $result->xrds_uri = $yadis_location;
 
+// Auth_OpenID::log("SecFuNet :: TRACE :: discover (yadis) :: %s", $yadis_location);
                 $response = $fetcher->get($yadis_location);
 
                 if ((!$response) || ($response->status != 200 and

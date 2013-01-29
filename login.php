@@ -5,14 +5,19 @@
  */
 
 
+add_action( 'init', 'openid_login_errors' );
+
+add_action( 'authenticate', 'openid_authenticate' );
+add_action( 'openid_finish_auth', 'openid_finish_login', 10, 2);
+
 add_action( 'login_head', 'openid_wp_login_head');
 add_action( 'login_form', 'openid_wp_login_form');
+
 add_action( 'register_form', 'openid_wp_register_form', 9);
 add_action( 'register_post', 'openid_register_post', 10, 3);
-add_action( 'openid_finish_auth', 'openid_finish_login', 10, 2);
+
 add_filter( 'registration_errors', 'openid_clean_registration_errors', -99);
 add_filter( 'registration_errors', 'openid_registration_errors');
-add_action( 'init', 'openid_login_errors' );
 
 
 /**
@@ -54,7 +59,6 @@ function openid_authenticate($user) {
 
 	return $user;
 }
-add_action( 'authenticate', 'openid_authenticate' );
 
 
 /**
@@ -65,7 +69,6 @@ add_action( 'authenticate', 'openid_authenticate' );
  */
 function openid_finish_login($identity_url, $action) {
 	if ($action != 'login') return;
-		
 	// create new user account if appropriate
 	$user_id = get_user_by_openid($identity_url);
 	if ($identity_url && !$user_id) {
@@ -92,7 +95,7 @@ function openid_finish_login($identity_url, $action) {
 
 	$url = add_query_arg( array( 
 		'finish_openid' => 1, 
-		'identity_url' => urlencode($identity_url), 
+		'identity_url' => $identity_url,
 		'redirect_to' => $_SESSION['openid_finish_url'],
 		'_wpnonce' => wp_create_nonce('openid_login_' . md5($identity_url)), 
 	), $url);

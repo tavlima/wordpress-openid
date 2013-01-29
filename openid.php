@@ -23,6 +23,11 @@ if ( !@is_readable('/dev/urandom') ) {
 	define('Auth_OpenID_RAND_SOURCE', null); 
 }
 
+define('Auth_OpenID_VERIFY_HOST', false);
+define('Auth_OpenID_ALLOW_UNSECURE_IDENTITY', true);
+// define('Auth_OpenID_CAINFO', '/absolute/path/to/ca/cert');
+// define('Auth_OpenID_CAPATH', '/usr/lib/ssl/certs');
+
 set_include_path( $openid_include_path . PATH_SEPARATOR . get_include_path() );
 
 require_once dirname(__FILE__) . '/common.php';
