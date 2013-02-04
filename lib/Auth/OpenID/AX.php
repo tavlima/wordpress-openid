@@ -930,14 +930,14 @@ class Auth_OpenID_AX_FetchResponse extends Auth_OpenID_AX_KeyValueMessage {
         } else {
             $ax_args = $success_response->message->getArgs($obj->ns_uri);
         }
-        if ($ax_args === null || Auth_OpenID::isFailure($ax_args) ||
-              sizeof($ax_args) == 0) {
+        if ($ax_args === null || Auth_OpenID::isFailure($ax_args) || sizeof($ax_args) == 0) {
+            Auth_OpenID::log("Auth_OpenID_AX_FetchResponse::fromSuccessResponse - Could not get ns_uri");
             return null;
         }
 
         $result = $obj->parseExtensionArgs($ax_args);
         if (Auth_OpenID_AX::isError($result)) {
-            #XXX log me
+            Auth_OpenID::log("Auth_OpenID_AX_FetchResponse::fromSuccessResponse - Error parsing AX extension arguments");
             return null;
         }
         return $obj;
